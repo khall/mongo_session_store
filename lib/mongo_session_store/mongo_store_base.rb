@@ -4,9 +4,9 @@ module ActionDispatch
   module Session
     class MongoStoreBase < AbstractStore
 
-      SESSION_RECORD_KEY = 'rack.session.record'.freeze
+      SESSION_RECORD_KEY = Rack::RACK_SESSION
       begin
-        ENV_SESSION_OPTIONS_KEY = Rack::Session::Abstract::ENV_SESSION_OPTIONS_KEY
+        ENV_SESSION_OPTIONS_KEY = Rack::RACK_SESSION_OPTIONS
       rescue NameError
         # Rack 1.2.x has access to the ENV_SESSION_OPTIONS_KEY
       end
@@ -31,6 +31,10 @@ module ActionDispatch
           [sid, unpack(record.data)]
         end
 
+        def find_session(env, sid)
+          get_session(env, sid)
+        end
+
         def set_session(env, sid, session_data, options = {})
           id, record = get_session_record(env, sid)
           record.data = pack(session_data)
@@ -39,6 +43,11 @@ module ActionDispatch
           # However, ActionPack seems to want a session id instead.
           record.save ? id : false
         end
+        
+        def write_session(env, sid, session_data, options = {})
+          set_session(env, sid, session_data, options)
+        end
+        
 
         def find_or_initialize_session(id)
           session = (id && session_class.where(:_id => id).first) || session_class.new(:_id => generate_sid)
@@ -46,7 +55,7 @@ module ActionDispatch
         end
 
         def get_session_record(env, sid)
-          if env[ENV_SESSION_OPTIONS_KEY][:id].nil? || !env[SESSION_RECORD_KEY]
+          if env.env[ENV_SESSION_OPTIONS_KEY][:id].nil? || !env[SESSION_RECORD_KEY]
             sid, env[SESSION_RECORD_KEY] = find_or_initialize_session(sid)
           end
 
