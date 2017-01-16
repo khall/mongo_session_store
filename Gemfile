@@ -11,13 +11,15 @@ RAILS_VERS = case ENV['RAILS_VERS']
                '~>4.1.9'
              when '4.2'
                '~>4.2.0'
+             when '5.0'
+               '~>5.0'
              when nil
                nil
              else
-               raise "Invalid RAILS_VERS.  Available versions are 3.1, 3.2, 4.0, 4.1, and 4.2."
+               raise "Invalid RAILS_VERS.  Available versions are 3.1, 3.2, 4.0, 4.1, 4.2, and 5.0."
              end
 
-gemspec :name => 'mongo_session_store-rails4'
+gemspec :name => 'mongo_session_store'
 
 group :development, :test do
   gem 'rake'
